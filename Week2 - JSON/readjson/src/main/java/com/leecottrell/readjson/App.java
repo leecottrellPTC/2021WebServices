@@ -1,76 +1,68 @@
-package com.leecottrell.readjson;
+package com.example.readcompanyjson;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.*;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.type.*;
+import com.fasterxml.jackson.databind.*;
+import java.io.*;
+import java.nio.file.*;
 
 /**
  * Hello world!
  *
  */
-public class App {
-
-    static List<CompanyClass> companyList = new ArrayList<CompanyClass>();
+public class App 
+{
+    static List<Company> companyList = new ArrayList<Company>();
     static int counter = 0;
 
-    public static  void readFileIntoArray(){
-        ObjectMapper mapper = new ObjectMapper();
-        BufferedReader file;
-        String line;
-        CompanyClass comp;
-
-        try{
-            file = new BufferedReader(new FileReader("c:\\data\\companies.json"));
-            line = file.readLine();
-            while(line != null){
-                companyList.add(new CompanyClass());
-                companyList.set(counter, mapper.readValue(line, CompanyClass.class));
-                line = file.readLine();
-                counter ++;
-            }
+    public static String readAllLines(String path) {
+        // https://howtodoinjava.com/java/io/java-read-file-to-string-examples/
+        String content = "";
+        try {
+            content = new String(Files.readAllBytes(Paths.get(path)));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        catch(FileNotFoundException fnfex){
-            System.out.println("Error opening file\n");
-            System.exit(404);
-        }
-        catch(IOException iex){
-            System.out.println("Parse error\n");
-            System.exit(500);
-
-        }
-        
-    }//end of read file
-
-    static int doSomethingWithData(){
-        int countNA = 0;
-        for(int x=0; x < counter; x++){
-            if(companyList.get(x).getIndustry().equalsIgnoreCase("n/a")){
-                countNA ++;
-            }
-        }
-        return countNA;
+        return content;
     }
 
+    public static void printTop(int num){
+        for(int x=0; x < num; x++){
+            System.out.println(companyList.get(x).toString());
+        }
+    }
+
+    public static void countNA(){
+        //use for each loop just because
+        int naCount = 0;
+        for(Company aCompany : companyList){
+            if(aCompany.getIndustry().equalsIgnoreCase("n/a")){
+                naCount ++;
+                System.out.println(aCompany.getCompany());
+            }//end of if
+        }//end of for
+        System.out.println("N/A Companies found = " + naCount);
+    }
     public static void main( String[] args )
     {
-        readFileIntoArray();
-        System.out.println("Records read " + counter);
-        System.out.println("Companies with N/A industry " + doSomethingWithData());
-      /*  try{
-            //ObjectMapper mapper = new ObjectMapper();
-            // CompanyClass comp = mapper.readValue(new File("c:\\data\\acompany.json"), CompanyClass.class );
-            // System.out.println(comp.toString());
-       }
-       catch (IOException ex){
-           System.out.println(ex.toString());
-           return ;
-       }
-       */
+        String json;
+        Company aCompany;
+        ObjectMapper mapper = new ObjectMapper();
+        json = readAllLines("c:\\data\\companies.json");
+        //System.out.println(json);
+        try {
+            companyList = mapper.readValue(json, new TypeReference<List<Company>>(){});
+            counter = companyList.size();
+            System.out.println("Lines read " + counter);
+            //printTop(10);
+            //countNA();
+        } catch (JsonMappingException e) {
+
+            System.out.println("Mappng exception " + e.toString());
+        } catch (JsonProcessingException e) {
+  
+            System.out.println("Processing exception " + e.toString());
+        }
     }
 }

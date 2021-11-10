@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-Lecture1Application<lecture1>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "mainClass": "com.leecottrell.lecture1.Lecture1Application",
+            "projectName": "lecture1",
+            "args": ""
+        }
+    ]
+}

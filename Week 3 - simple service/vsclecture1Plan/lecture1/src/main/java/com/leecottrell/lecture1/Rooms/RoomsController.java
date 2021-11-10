@@ -1,6 +1,7 @@
 package com.leecottrell.lecture1.Rooms;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
@@ -25,38 +26,44 @@ public class RoomsController {
         reservations.put(res2.getRoomNum(), res2);
     }
 
-    @RequestMapping(value="/Rooms", method=RequestMethod.GET)
-	public List<Rooms> getReservations(@RequestParam(value="roomnum",defaultValue="0") int roomnum ) {
-        //Collection<Rooms> results = reservations.values();
-        //List response = new ArrayList<>(results);
+    @RequestMapping(value = "/Rooms", method = RequestMethod.GET)
+    public ResponseEntity<List<Rooms>> getReservations(@RequestParam(value = "roomnum", defaultValue = "0")
+         int roomnum) {
+        // Collection<Rooms> results = reservations.values();
+        // List response = new ArrayList<>(results);
         List response = new ArrayList();
-
-        switch(roomnum){
-            case 0:
-                response = new ArrayList(reservations.values());
-                break;
-            default:
-                Rooms found = reservations.get(roomnum);
-                if(found == null){
-                    response.add(new Rooms(roomnum, "room is empty"));
-                }
-                else{
-                    response.add(reservations.get(roomnum));
-                }
-                break;
-        }//end switch
-        
-        return response;
+        switch (roomnum) {
+        case 0:
+            response = new ArrayList(reservations.values());
+            break;
+        default:
+            Rooms found = reservations.get(roomnum);
+            if (found == null) {
+                response.add(new Rooms(roomnum, "room is empty"));
+                return new ResponseEntity<List<Rooms>>(response, HttpStatus.NOT_FOUND);
+            } else {
+                response.add(reservations.get(roomnum));
+            }
+            break;
+        }// end switch
+        return new ResponseEntity<List<Rooms>>(response, HttpStatus.OK);
     }// end get
 
+    
     @RequestMapping(value = "/Rooms", method = RequestMethod.POST)
-    public Rooms postReservation(@RequestBody String reservation) {
+    public ResponseEntity<Rooms> postReservation(@RequestBody String reservation) {
         ObjectMapper mapper = new ObjectMapper();
-               
         Rooms response = new Rooms(0, "Error in reservation, not added");
         try {
             response = mapper.readValue(reservation, Rooms.class);
-            reservations.put(response.getRoomNum(), response);
+            if (reservations.get(response.getRoomNum()) == null) {
+                reservations.put(response.getRoomNum(), response);
+            }
+            else{
+                
+                response = new Rooms(0, "Room already reserved");
+                return new ResponseEntity<Rooms>(response, HttpStatus.NOT_ACCEPTABLE);
+            }
         } catch (JsonMappingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -65,25 +72,38 @@ public class RoomsController {
             e.printStackTrace();
         }
 
-        return response;
-
+        return new ResponseEntity<Rooms>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/Rooms", method = RequestMethod.PUT)
-    @ResponseStatus(code = HttpStatus.NOT_IMPLEMENTED, reason = "Not configured yet")
-    public Rooms updateReservation() {
+    public ResponseEntity<Rooms> updateReservation(@RequestParam(value="roomnum") int roomnum,
+        @RequestParam(value="addon") String addon) {
         Rooms response = new Rooms(0, "empty");
 
-        return response;
+        if(reservations.get(roomnum) == null){
+            response = new Rooms(0, "room not reserved");
+                return new ResponseEntity<Rooms>(response, HttpStatus.NOT_FOUND);
+        }
+        String origGuest = reservations.get(roomnum).getGuest();
+        reservations.get(roomnum).setGuest(origGuest + " and " + addon);
+        response = reservations.get(roomnum);
+
+        return new ResponseEntity<Rooms>(response, HttpStatus.OK);
 
     }
 
     @RequestMapping(value = "/Rooms", method = RequestMethod.DELETE)
-    @ResponseStatus(code = HttpStatus.NOT_IMPLEMENTED, reason = "Not configured yet")
-    public Rooms deleteReservation() {
+    public ResponseEntity<Rooms> deleteReservation(@RequestParam(value="roomnum") int roomnum) {
         Rooms response = new Rooms(0, "empty");
 
-        return response;
+        if(reservations.get(roomnum) == null){
+            response = new Rooms(0, "room not reserved");
+                return new ResponseEntity<Rooms>(response, HttpStatus.NOT_FOUND);
+        }
+        response = new Rooms(roomnum, "deleted");
+        reservations.remove(roomnum);
+
+        return new ResponseEntity<Rooms>(response, HttpStatus.OK);
 
     }
 }// end class

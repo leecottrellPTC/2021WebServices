@@ -4,8 +4,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.tomcat.util.http.parser.HttpParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,27 +55,57 @@ public class RoomsController {
     }
 
     @RequestMapping(value="/Rooms", method=RequestMethod.POST)
-    @ResponseStatus(code = HttpStatus.NOT_IMPLEMENTED,reason="POST not configured")
-    public Rooms createReservation(){
+    public ResponseEntity<Rooms> createReservation(@RequestBody String reservation){
 
-        Rooms response = new Rooms(0, "not implemented");
-        return response;
+        ObjectMapper mapper = new ObjectMapper();      
+        Rooms response = new Rooms(0, "Error in reservation, not added");
+        try{
+            response = mapper.readValue(reservation, Rooms.class);
+            if(reservations.get(response.getRoomNum()) == null){
+                 reservations.put(response.getRoomNum(), response);
+            }
+            else{
+                response = new Rooms(0, "Room already reserved");
+                return new ResponseEntity<Rooms>(response, HttpStatus.NOT_ACCEPTABLE);
+            }        
+        }
+        catch(JsonMappingException jemx){
+    
+        } catch (JsonProcessingException e) {
+           
+        }
+        return new ResponseEntity<Rooms>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value="/Rooms", method=RequestMethod.PUT)
-    @ResponseStatus(code = HttpStatus.NOT_IMPLEMENTED,reason="PUT not configured")
-    public Rooms updateReservation(){
+    public ResponseEntity<Rooms> updateReservation(@RequestParam(value="roomnum") int roomnum,
+    @RequestParam(value="addon") String addon){
 
         Rooms response = new Rooms(0, "not implemented");
-        return response;
+
+        if(reservations.get(roomnum) == null){
+            response = new Rooms(roomnum, "Room is not reserved, no changes made");
+            return new ResponseEntity<Rooms>(response, HttpStatus.NOT_FOUND);
+        }
+
+        String origGuest = reservations.get(roomnum).getGuest();
+        reservations.get(roomnum).setGuest(origGuest + " and " + addon);
+        response = reservations.get(roomnum);
+
+        return new ResponseEntity<Rooms>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value="/Rooms", method=RequestMethod.DELETE)
-    @ResponseStatus(code = HttpStatus.NOT_IMPLEMENTED,reason="DELETE not configured")
-    public Rooms deleteReservation(){
+    public ResponseEntity<Rooms> deleteReservation(@RequestParam(value="roomnum") int roomnum){
 
-        Rooms response = new Rooms(0, "not implemented");
-        return response;
+        Rooms response = new Rooms(roomnum, "deleted");
+
+        if(reservations.get(roomnum) == null){
+            response = new Rooms(roomnum, "Room is not reserved, not deleted");
+            return new ResponseEntity<Rooms>(response, HttpStatus.NOT_FOUND);
+        }
+        reservations.remove(roomnum);
+        return new ResponseEntity<Rooms>(response, HttpStatus.OK);
     }
 
 }

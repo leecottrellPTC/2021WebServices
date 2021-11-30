@@ -3,6 +3,7 @@ package com.leecottrell.plantestlecture2;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -20,6 +21,11 @@ public class Plantestlecture2Application {
 	@RequestMapping(value="/", method=RequestMethod.GET)
 	public String getRespond(){
 		return "<h1>Hey, it works!</h1>";
+	}
+
+	@RequestMapping(value="/", method=RequestMethod.POST)
+	public ResponseEntity<String> postResponse(){
+		return new ResponseEntity<String>("Not configured", HttpStatus.NOT_IMPLEMENTED);
 	}
 
 }

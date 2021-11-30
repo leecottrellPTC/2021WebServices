@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-Plantestlecture2Application<plantestlecture2>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "mainClass": "com.leecottrell.plantestlecture2.Plantestlecture2Application",
+            "projectName": "plantestlecture2",
+            "args": ""
+        }
+    ]
+}

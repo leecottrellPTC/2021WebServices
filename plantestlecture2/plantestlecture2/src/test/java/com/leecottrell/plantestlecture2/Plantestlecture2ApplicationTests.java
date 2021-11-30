@@ -7,6 +7,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +31,26 @@ class Plantestlecture2ApplicationTests {
 	public void testIt() throws Exception{
 		this.base = new URL("http://localhost:" + port + "");
 		template = new TestRestTemplate();
-		final ResponseEntity<String> response = template.getForEntity(base.toString(),
+		
+		final ResponseEntity<String> response = 
+		template.getForEntity(base.toString(),
 			 String.class);
 		String actual = response.getBody();
 		String expected = "<h1>Hey, it works!</h1>";
 
 		assertEquals(expected, actual, "Test Body");
+	}
+
+	@Test
+	public void testPost() throws Exception{
+		this.base = new URL("http://localhost:" + port + "");
+		template = new TestRestTemplate();
+		final ResponseEntity<String> response = template.postForEntity(base.toString(), 
+			"POST", String.class, "");
+		String expected = "501";
+		String actual = response.getStatusCode().toString();
+		//assertTrue(, );
+		assertTrue(actual.contains(expected), "POST not implemented fails");
 	}
 
 

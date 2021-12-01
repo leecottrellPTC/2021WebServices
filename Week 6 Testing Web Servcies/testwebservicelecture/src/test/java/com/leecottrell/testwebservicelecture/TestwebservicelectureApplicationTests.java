@@ -13,6 +13,9 @@ import java.net.URL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.leecottrell.testwebservicelecture.Sport.*;
+
 //@SpringBootTest
 class TestwebservicelectureApplicationTests {
 
@@ -53,6 +56,55 @@ class TestwebservicelectureApplicationTests {
 
 		//assertEquals(expected, actual, "POST not implemented test");
 		assertTrue(actual.contains(expected), "POST not implemented test");
+	}
+
+	//testing /Sport
+	//Does it respond?
+	//does it send back right info
+
+	@Test
+	public void sportHttpOK() throws Exception{
+		port = 8080;
+		this.base = new URL("http://localhost:" + port + "/Sport?sportName=Soccer");
+		template = new TestRestTemplate();
+		ResponseEntity<Sport> response = template.getForEntity(base.toString(), Sport.class);
+
+		String expected = "200";
+		String actual = response.getStatusCode().toString();
+
+		//assertEquals(expected, actual, "POST not implemented test");
+		assertTrue(actual.contains(expected), "/Sport not implemented test");
+	}
+
+	@Test
+	public void testSoccerDetails() throws Exception{
+		port = 8080;
+		this.base = new URL("http://localhost:" + port + "/Sport?sportName=Soccer");
+		template = new TestRestTemplate();
+		ResponseEntity<Sport> response = template.getForEntity(base.toString(), Sport.class);
+
+		//ObjectMapper mapper = new ObjectMapper();
+		//Sport sportjson = mapper.readValue(response.getBody().toString(), Sport.class);
+		String actual = response.getBody().toString();
+		String expected = "Riverhounds";
+		//assertEquals(sportjson.getTeamName(), "Riverhounds", "Soccer team is bad");
+		//assertTrue(actual.contains(expected), "Riverhounds is bad - Soccer returns wrong team");
+		assertEquals(expected,response.getBody().getTeamName(),  "testSoccerDetails - Riverhounds is bad - Soccer returns wrong team");
+		//thanks Mason
+	}
+
+	@Test
+	public void testNoSport() throws Exception{
+		port = 8080;
+		this.base = new URL("http://localhost:" + port + "/Sport?sportName=Football");
+		template = new TestRestTemplate();
+		ResponseEntity<Sport> response = template.getForEntity(base.toString(), Sport.class);
+
+		String actual = response.getBody().toString();
+		String expected = "no name";
+		
+		assertEquals(expected, response.getBody().getTeamName(), "testNoSport - Error condition fails");
+
 	}
 
 }

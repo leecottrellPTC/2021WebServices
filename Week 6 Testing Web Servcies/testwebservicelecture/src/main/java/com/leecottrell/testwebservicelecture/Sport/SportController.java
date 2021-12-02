@@ -15,7 +15,7 @@ public class SportController {
     public ResponseEntity<Sport> sportInfo(@RequestParam String sportName){
         Sport aSport = new Sport();
         //aSport.setTeamName("Riverhounds");
-        /*
+        
         if(sportName.equalsIgnoreCase("soccer")){
             aSport.setSportName(sportName);
             aSport.setStadium("Highmark Stadium");
@@ -32,7 +32,7 @@ public class SportController {
             aSport.setStadium("no stadium");
             return new ResponseEntity<Sport>(aSport, HttpStatus.NOT_FOUND);
         }
-        */
+        
 
         return new ResponseEntity<Sport>(aSport, HttpStatus.OK);
     }

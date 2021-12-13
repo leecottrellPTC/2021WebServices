@@ -94,7 +94,7 @@ public class TestauthApplication {
 			character = character.replace("drop", "");
 
 
-			String connectionURL = "jdbc:sqlserver://cottrellsql.database.windows.net:1433;database=cottrell2021;user=fiction@cottrellsql;password=a,plain3;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+			String connectionURL = "Your Connection String";;
 			try {
 				Connection con = DriverManager.getConnection(connectionURL);
 				Statement stmt = con.createStatement();

@@ -5,6 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+
+import java.sql.*;
+import java.util.*;
+
 import org.apache.tomcat.util.codec.binary.Base64;
 
 @RestController
@@ -16,7 +21,7 @@ public class SecurewebserviceApplication {
 	}
 
 	@RequestMapping(value="/", method=RequestMethod.GET)
-	public ResponseEntity<String> login(@RequestHeader("Authorization") String auth){
+	public ResponseEntity<List<Fiction>> login(@RequestHeader("Authorization") String auth){
 
 		String userPass = auth.substring(6);	//why 6? - strip BASIC out
 		byte[] decryptArray = Base64.decodeBase64(userPass);
@@ -25,19 +30,39 @@ public class SecurewebserviceApplication {
 		String userName = decryptString.substring(0, colon);
 		String password = decryptString.substring(colon+1);
 
+		List<Fiction> characters = new ArrayList<Fiction>();
+
 		if(userName.equalsIgnoreCase("lee") && password.equals("hello")){
 
 			//put your service code here
-
-			return new ResponseEntity<String>("Welcome " + userName, HttpStatus.ACCEPTED);
+			//characters.add(new Fiction("Welcome " + userName, "Accepted"));
+			String connectionURL = "jdbc:sqlserver://cottrellsql.database.windows.net:1433;database=cottrell2021;user=fiction@cottrellsql;password=a,plain3;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+			try{
+				Connection con = DriverManager.getConnection(connectionURL);
+				Statement stmt = con.createStatement();
+				String SQL = "select * from fiction";
+				ResultSet rs = stmt.executeQuery(SQL);
+				while(rs.next()){
+					characters.add(new Fiction(rs.getString("character"), rs.getString("source")));
+				}
+				con.close();
+			}
+			catch(SQLException e){
+				characters.add(new Fiction("SQL Error ", e.toString()));
+				return new ResponseEntity<List<Fiction>>(characters, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			return new ResponseEntity<List<Fiction>>(characters, HttpStatus.ACCEPTED);
 		}
 		else{		
-			return new ResponseEntity<String> ("Not authorized, go away " + userName, HttpStatus.NETWORK_AUTHENTICATION_REQUIRED);
+			characters.add(new Fiction("Not Authorized", "Invalid username or password"));
+			return new ResponseEntity<List<Fiction>>(characters, HttpStatus.NETWORK_AUTHENTICATION_REQUIRED);
 		}
 	}
 
 	@RequestMapping(value="/", method=RequestMethod.POST)
-	public ResponseEntity<String> post(@RequestHeader("Authorization") String auth){
+	public ResponseEntity<String> post(@RequestHeader("Authorization") String auth, 
+		@RequestParam(value="character") String character, 
+		@RequestParam(value="source") String source){
 
 		String userPass = auth.substring(6);	//why 6? - strip BASIC out
 		byte[] decryptArray = Base64.decodeBase64(userPass);
@@ -48,10 +73,24 @@ public class SecurewebserviceApplication {
 
 		if(userName.equalsIgnoreCase("lee") && password.equals("hello")){
 
-			//put your service code here
+			if(source.isEmpty() || character.isEmpty()){
+				return new ResponseEntity<String> ("I need both a character and a source " + 
+				userName, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 
-			return new ResponseEntity<String>("Welcome to POST " + 
-				userName, HttpStatus.ACCEPTED);
+			String connectionURL = "jdbc:sqlserver://cottrellsql.database.windows.net:1433;database=cottrell2021;user=fiction@cottrellsql;password=a,plain3;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+			try{
+				Connection con = DriverManager.getConnection(connectionURL);
+				Statement stmt = con.createStatement();
+				String SQL = String.format("insert into fiction values('%s', '%s')", character, source);
+				stmt.execute(SQL);
+			}
+			catch(SQLException ex){
+				return new ResponseEntity<String> ("SQL Error\n" +ex.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			
+
+			return new ResponseEntity<String>(character + " added to fiction table", HttpStatus.ACCEPTED);
 		}
 		else{		
 			return new ResponseEntity<String> ("POST Not authorized, go away " + 

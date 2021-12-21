@@ -32,7 +32,7 @@ public class SecurewebserviceApplication {
 
 		List<Fiction> characters = new ArrayList<Fiction>();
 
-		if(userName.equalsIgnoreCase("lee") && password.equals("hello")){
+		if(userName.equalsIgnoreCase("lee") && password.equals("5d41402abc4b2a76b9719d911017c592")){
 
 			//put your service code here
 			//characters.add(new Fiction("Welcome " + userName, "Accepted"));
@@ -71,7 +71,7 @@ public class SecurewebserviceApplication {
 		String userName = decryptString.substring(0, colon);
 		String password = decryptString.substring(colon+1);
 
-		if(userName.equalsIgnoreCase("lee") && password.equals("hello")){
+		if(userName.equalsIgnoreCase("lee") && password.equals("5d41402abc4b2a76b9719d911017c592")){
 
 			if(source.isEmpty() || character.isEmpty()){
 				return new ResponseEntity<String> ("I need both a character and a source " + 
@@ -82,7 +82,25 @@ public class SecurewebserviceApplication {
 			try{
 				Connection con = DriverManager.getConnection(connectionURL);
 				Statement stmt = con.createStatement();
-				String SQL = String.format("insert into fiction values('%s', '%s')", character, source);
+				
+				//protecting the lengths
+				if(source.length() > 100){
+					source = source.substring(0, 100);
+				}
+				if(character.length() > 50){
+					character = character.substring(0, 50);
+				}
+
+				//replace special characters
+				source = source.replace(";", "");
+				source = source.replace("!", "");
+				source = source.replace("drop", "");	//kill SQL commands
+
+				character = character.replace(";", "");
+				character = character.replace("!", "");
+				character = character.replace("drop", "");
+
+				String SQL = String.format("begin tran;insert into fiction values('%s', '%s');commit;", character, source);
 				stmt.execute(SQL);
 			}
 			catch(SQLException ex){

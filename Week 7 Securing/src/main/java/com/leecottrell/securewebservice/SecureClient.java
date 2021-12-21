@@ -14,8 +14,40 @@ import org.apache.http.util.*;
 import org.apache.tomcat.util.codec.binary.Base64;
 import java.util.*;
 
+import javax.crypto.EncryptedPrivateKeyInfo;
+
+import java.security.*;
+
 public class SecureClient {
+
+    public static String hashPasword(String password){
+        String hashedPassword = null;
+
+        MessageDigest md;
+
+        try{
+            md = MessageDigest.getInstance("MD5");
+            md.update(password.getBytes());
+
+            byte[] bytes = md.digest();
+            StringBuilder s = new StringBuilder();
+            for (byte b : bytes) {
+                s.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+                //🧝‍♀️
+            }
+            hashedPassword = s.toString();
+        }
+        catch(NoSuchAlgorithmException nsa){
+            System.out.println("Hash failed :(");
+            System.exit(-1);
+        }
+
+        return hashedPassword;
+    }
     public static String buildAuth(String username, String password) {
+
+        password = hashPasword(password);
+
         String authHeader = "";
         String temp = username + ":" + password;
         String encoded = new String(
@@ -27,8 +59,9 @@ public class SecureClient {
     final static CloseableHttpClient httpClient = HttpClients.createDefault();
 
     public static void main(String[] args) {
-        // getClient();
-        postClient();
+        getClient();
+        //postClient();
+        //System.out.println(hashPasword("hello"));
     }
 
     public static void postClient() {

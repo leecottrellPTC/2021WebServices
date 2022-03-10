@@ -1,4 +1,4 @@
-package com.example.readcompanyjson;
+package com.leecottrell.readjson;
 
 import java.util.*;
 import com.fasterxml.jackson.core.*;
@@ -13,7 +13,7 @@ import java.nio.file.*;
  */
 public class App 
 {
-    static List<Company> companyList = new ArrayList<Company>();
+    static List<CompanyClass> companyList = new ArrayList<CompanyClass>();
     static int counter = 0;
 
     public static String readAllLines(String path) {
